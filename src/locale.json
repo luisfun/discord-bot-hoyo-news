@@ -1,0 +1,121 @@
+{
+  "game": {
+    "genshin_impact": {
+      "title": {
+        "en": "Genshin Impact",
+        "ja": "原神"
+      },
+      "emoji": "✨",
+      "siteUrl": {
+        "en": "https://genshin.hoyoverse.com/en/news",
+        "ja": "https://genshin.hoyoverse.com/ja/news"
+      }
+    },
+    "honkai_star_rail": {
+      "title": {
+        "en": "Honkai: Star Rail",
+        "ja": "崩壊：スターレイル"
+      },
+      "emoji": "🚂",
+      "siteUrl": {
+        "en-us": "https://hsr.hoyoverse.com/en-us/news",
+        "ja-jp": "https://hsr.hoyoverse.com/ja-jp/news"
+      }
+    },
+    "zenless_zone_zero": {
+      "title": {
+        "en": "Zenless Zone Zero",
+        "ja": "ゼンレスゾーンゼロ"
+      },
+      "emoji": "📼",
+      "siteUrl": {
+        "en-us": "https://zenless.hoyoverse.com/en-us/news",
+        "ja-jp": "https://zenless.hoyoverse.com/ja-jp/news"
+      }
+    }
+  },
+  "set": {
+    "success": {
+      "embed": {
+        "title": {
+          "en": "Subscribed.",
+          "ja": "登録しました。"
+        }
+      }
+    },
+    "error": {
+      "content": {
+        "en": "Subscribe failed.",
+        "ja": "登録に失敗しました。"
+      }
+    }
+  },
+  "info": {
+    "success": {
+      "embed": {
+        "title": {
+          "en": "Subscribe Info",
+          "ja": "登録情報"
+        }
+      },
+      "components": {
+        "delete": {
+          "en": "Unsubscribe",
+          "ja": "登録解除"
+        },
+        "messageDelete": {
+          "en": "Delete",
+          "ja": "削除"
+        },
+        "test": {
+          "en": "Delivery Test",
+          "ja": "配信テスト"
+        }
+      }
+    },
+    "notSet": {
+      "content": {
+        "en": "Nothing has been subscribed yet.\nTry using `/set`.",
+        "ja": "まだ何も登録されていません。\n`/set`を使ってみてください。"
+      }
+    },
+    "error": {
+      "content": {
+        "en": "Failed to retrieve information.",
+        "ja": "情報の取得に失敗しました。"
+      }
+    }
+  },
+  "delete": {
+    "success": {
+      "embed": {
+        "title": {
+          "en": "Unsubscribed.",
+          "ja": "登録解除しました。"
+        }
+      }
+    },
+    "error": {
+      "content": {
+        "en": "Unsubscribe failed.",
+        "ja": "登録解除に失敗しました。"
+      }
+    }
+  },
+  "test": {
+    "success": {
+      "content": {
+        "en": "Article submitted.",
+        "ja": "記事を送信しました。"
+      }
+    }
+  },
+  "cron": {
+    "embed": {
+      "description": {
+        "en": "Detail",
+        "ja": "詳細"
+      }
+    }
+  }
+}

@@ -3,13 +3,28 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "deploy": "wrangler deploy",
+    "fix": "prettier . --write",
+    "register": "tsc && node dist/register.js",
     "dev": "wrangler dev",
-    "start": "wrangler dev"
+    "deploy": "wrangler deploy",
+    "log": "wrangler tail"
+  },
+  "prettier": {
+    "printWidth": 120,
+    "semi": false,
+    "singleQuote": true,
+    "arrowParens": "avoid"
   },
   "devDependencies": {
+    "@cloudflare/puppeteer": "^0.0.5",
     "@cloudflare/workers-types": "^4.20240208.0",
-    "typescript": "^5.0.4",
-    "wrangler": "^3.0.0"
+    "discord-api-types": "^0.37.70",
+    "dotenv": "^16.4.4",
+    "prettier": "^3.2.5",
+    "typescript": "^5.3.3",
+    "wrangler": "^3.28.3"
+  },
+  "dependencies": {
+    "discord-hono": "^0.4.4"
   }
 }
