@@ -1,6 +1,7 @@
 {
   "name": "discord-bot-hoyo-news",
   "version": "0.0.0",
+  "type": "module",
   "private": true,
   "scripts": {
     "fix": "prettier . --write",

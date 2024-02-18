@@ -152,6 +152,7 @@ const cronHandlers = new CronHandlers().on('', async c => {
   // send message
   if (deff[0]) {
     let apiRes = undefined
+    const notFoundList: { game: string; locale: string; channel_id: string }[] = []
     for (const data of deff) {
       const subscribe = await d1.getGameSubscribeAll(c.env.DB, data.game)
       if (!subscribe) {
@@ -176,10 +177,15 @@ const cronHandlers = new CronHandlers().on('', async c => {
                 ),
             )
             if (apiRes.res.ok) break
+            if (apiRes.res.status === 404)
+              notFoundList.push({ game: data.game, locale: data.locale, channel_id: guild.channel_id })
             if (apiRes.res.status !== 429) break
           }
         }
       }
+    }
+    if (notFoundList[0]) {
+      // hoohohoho
     }
   }
 })
@@ -190,3 +196,18 @@ app.handlers(commandHandlers)
 app.handlers(componentHandlers)
 app.handlers(cronHandlers)
 export default app
+
+// test
+/*
+export default {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    const url = new URL(request.url)
+    const { pathname } = url
+    if (pathname === `/`) {
+      const webData = await webScraping(env)
+      console.log(webData)
+    }
+    return new Response('Hello World!')
+  },
+}
+*/
