@@ -2,10 +2,14 @@ name = "discord-bot-hoyo-news"
 main = "src/index.ts"
 compatibility_date = "2024-02-08"
 
+compatibility_flags = [ "nodejs_compat" ]
 browser = { binding = "BROWSER" }
 
 [limits]
 cpu_ms = 3000
+
+[triggers]
+crons = [ "0 * * * *" ]
 
 [[d1_databases]]
 binding = "DB"
