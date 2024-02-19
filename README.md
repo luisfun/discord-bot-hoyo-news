@@ -1,6 +1,6 @@
 ⚠️ I think that you need a paid plan for workers to run this program on cloudflare.
 
-## 🤖 [Example Bot](https://discord.com/api/oauth2/authorize?client_id=1197426250743042069&permissions=2048&scope=bot)
+## 🤖 [HoYo News Bot](https://discord.com/api/oauth2/authorize?client_id=1197426250743042069&permissions=2048&scope=bot)
 
 ## 🚀 Getting Started
 
