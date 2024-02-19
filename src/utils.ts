@@ -1,3 +1,6 @@
+import type { APIEmbed } from 'discord-api-types/v10'
+import type { CommandContext, ComponentContext, ModalContext, CronContext } from 'discord-hono'
+import type { Article } from './web-scraping'
 import text from './locale.json'
 
 export type Game = keyof typeof text.game
@@ -12,7 +15,7 @@ export const t = (textJson: Record<string, string>, locale: string) => {
 
 const localeFind = (locales: string[], a: string) => locales.find(loc => localeMatch(loc, a))
 
-const localeMatch = (a: string, b: string) => {
+export const localeMatch = (a: string, b: string) => {
   if (a === '' || b === '') return false
   const arrA = a.toLowerCase().split('-')
   const arrB = b.toLowerCase().split('-')
@@ -31,30 +34,38 @@ export const titleFilter = (title: string, filter_words: string | undefined) => 
   return false
 }
 
-type ApiResponse = {
-  res: Response
-  xRateLimit: {
-    RetryAfter: string | null
-    Limit: string | null
-    Remaining: string | null
-    Reset: string | null
-    ResetAfter: string | null
-    Bucket: string | null
-    Scope: string | null
-    Global: string | null
-  }
-}
-export const apiWait = async (apiRes: ApiResponse | undefined) => {
-  if (!apiRes) return null
-  if (apiRes.res.status === 429) {
-    const ms = Number(apiRes.xRateLimit.RetryAfter || 60) * 1000
-    console.log('===== RateLimit =====\n', apiRes.xRateLimit, '\n===== RateLimit =====')
-    await sleep(ms)
-  } else {
-    const ms = (5 - Number(apiRes.xRateLimit.Remaining || 5)) * 200
-    await sleep(ms)
-  }
-  return null
+export const embedColor = (title: string) => {
+  if (title.includes('Web Event' || title.includes('Webイベント') || title === 'yellow')) return 15918848
+  if (
+    title.includes('Event Wishes Notice') ||
+    title.includes('予告番組') ||
+    title.includes('祈願予告') ||
+    title === 'green'
+  )
+    return 45163
+  if (title === 'red') return 16730880
+  return 1667583 // blue
 }
 
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, Math.max(ms, 0)))
+export const postArticles = async (
+  c: CommandContext | ComponentContext | ModalContext | CronContext,
+  locale: string,
+  articles: Article[],
+  channel_id: string,
+  filter_words?: string,
+) => {
+  return await c.postEmbeds(
+    channel_id,
+    ...articles
+      .filter(e => titleFilter(e.title, filter_words))
+      .map(
+        e =>
+          ({
+            title: e.title,
+            description: `[${t(text.cron.embed.description, locale)}](${e.articleUrl})`,
+            image: { url: e.imageUrl },
+            color: e.color,
+          }) as APIEmbed,
+      ),
+  )
+}

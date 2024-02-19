@@ -1,4 +1,3 @@
-import type { APIEmbed } from 'discord-api-types/v10'
 import {
   DiscordHono,
   Components,
@@ -13,7 +12,7 @@ import * as d1 from './d1.js'
 import type { WebData } from './web-scraping.js'
 import { webScraping } from './web-scraping.js'
 import type { Game } from './utils.js'
-import { t, titleFilter, apiWait } from './utils.js'
+import { t, localeMatch, postArticles, embedColor } from './utils.js'
 import text from './locale.json'
 
 export type Env = {
@@ -35,14 +34,15 @@ const commandHandlers = new CommandHandlers<Env>()
     // success
     if (info) {
       const title = t(text.game[game as Game].title, locale)
-      const filter = info.filter_words !== '' ? `\n${info.filter_words}` : ''
+      const filter = info.filter_words !== '' ? `\n\`${info.filter_words}\`` : ''
       return c.resEmbeds({
         title: t(text.set.success.embed.title, locale),
         description: `${title} <#${info.channel_id}>${filter}`,
+        color: embedColor('green'),
       })
     }
     // set: success, get: error
-    else if (success) return c.resEmbeds({ title: t(text.set.success.embed.title, locale) })
+    else if (success) return c.resEmbeds({ title: t(text.set.success.embed.title, locale), color: embedColor('green') })
     // error
     else return c.resEphemeral({ content: t(text.set.error.content, locale) })
   })
@@ -56,12 +56,12 @@ const commandHandlers = new CommandHandlers<Env>()
         .map(e => {
           const emoji = text.game[e.title].emoji
           const title = t(text.game[e.title].title, e.locale)
-          const filter = e.filter_words !== '' ? `\n${e.filter_words}` : ''
+          const filter = e.filter_words !== '' ? `\n\`${e.filter_words}\`` : ''
           return `${emoji} ${title} <#${e.channel_id}>${filter}`
         })
         .join('\n\n')
       return c.res({
-        embeds: [{ title: t(text.info.success.embed.title, locale), description }],
+        embeds: [{ title: t(text.info.success.embed.title, locale), description, color: embedColor('blue') }],
         components: new Components()
           .row(
             ...info.map(e =>
@@ -104,6 +104,7 @@ const componentHandlers = new ComponentHandlers<Env>()
       return c.resEmbeds({
         title: t(text.delete.success.embed.title, locale),
         description: t(text.game[game as Game].title, locale),
+        color: embedColor('red'),
       })
     }
     // error
@@ -111,13 +112,30 @@ const componentHandlers = new ComponentHandlers<Env>()
   })
   .on('message-delete', async c => c.resUpdateDelete())
   .on('test', async c => {
+    const guild_id = c.interaction.guild_id
     const locale = c.interaction.locale
-    return c.resUpdate({ content: t(text.test.success.content, locale) })
+    let updateText: string = ''
+    try {
+      const info = await d1.getTestArticleAndChannel(c.env.DB, guild_id)
+      if (!info) throw new Error('Database SELECT failed.')
+      for (const channel of info.guild) {
+        for (const article of info.articles) {
+          if (channel.title === article.game && localeMatch(channel.locale, article.locale)) {
+            const res = await postArticles(c, article.locale, [article.latest_article_data], channel.channel_id)
+            if (!res) throw new Error('Send error.')
+          }
+        }
+      }
+      updateText = t(text.test.success.content, locale)
+    } catch (e) {
+      updateText = `${t(text.test.error.content, locale)}\n${e}`
+    }
+    return c.resUpdate({ content: updateText })
   })
 
-const cronHandlers = new CronHandlers().on('', async c => {
+const cronHandlers = new CronHandlers<Env>().on('', async c => {
   const webData = await webScraping(c.env)
-  const dbArticle = await d1.getArticleIds(c.env.db)
+  const dbArticle = await d1.getArticleIds(c.env.DB)
   if (!dbArticle) throw new Error('Web Scraping Error')
   const saveBatch: d1.SaveData[] = []
   const deff = webData
@@ -132,8 +150,8 @@ const cronHandlers = new CronHandlers().on('', async c => {
         saveBatch.push({
           game: data.game,
           locale: data.locale,
-          article_ids: JSON.stringify(saveIds),
-          latest_article_data: JSON.stringify(saveLatestData),
+          article_ids: saveIds,
+          latest_article_data: saveLatestData,
         })
         return {
           game: data.game,
@@ -152,40 +170,26 @@ const cronHandlers = new CronHandlers().on('', async c => {
   // send message
   if (deff[0]) {
     let apiRes = undefined
-    const notFoundList: { game: string; locale: string; channel_id: string }[] = []
+    const notFoundList: { game: string; channel_id: string; status: number }[] = []
     for (const data of deff) {
       const subscribe = await d1.getGameSubscribeAll(c.env.DB, data.game)
-      if (!subscribe) {
-        console.warn('Database SELECT failed.')
-        continue
-      }
+      if (!subscribe) continue
       for (const guild of subscribe) {
-        if (data.locale === guild.locale) {
+        if (localeMatch(data.locale, guild.locale)) {
           for (let i = 0; i < 3; i++) {
-            await apiWait(apiRes)
-            apiRes = await c.postEmbeds(
-              guild.channel_id,
-              ...data.articles
-                .filter(e => titleFilter(e.title, guild.filter_words))
-                .map(
-                  e =>
-                    ({
-                      title: e.title,
-                      description: `[${t(text.cron.embed.description, data.locale)}](${e.articleUrl})`,
-                      image: { url: e.imageUrl },
-                    }) as APIEmbed,
-                ),
-            )
-            if (apiRes.res.ok) break
-            if (apiRes.res.status === 404)
-              notFoundList.push({ game: data.game, locale: data.locale, channel_id: guild.channel_id })
-            if (apiRes.res.status !== 429) break
+            apiRes = await postArticles(c, data.locale, data.articles, guild.channel_id, guild.filter_words)
+            if (apiRes?.res.ok) break
+            if (apiRes?.res.status === 404)
+              notFoundList.push({ game: data.game, channel_id: guild.channel_id, status: apiRes.res.status })
+            if (apiRes?.res.status !== 429) break
           }
         }
       }
     }
     if (notFoundList[0]) {
-      // hoohohoho
+      for (const notFound of notFoundList) {
+        await d1.updateOrDeleteChannel(c.env.DB, notFound.game, notFound.channel_id, notFound.status)
+      }
     }
   }
 })
@@ -200,14 +204,18 @@ export default app
 // test
 /*
 export default {
-  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  async fetch(request: Request, env: Env['Bindings'], ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url)
     const { pathname } = url
     if (pathname === `/`) {
-      const webData = await webScraping(env)
-      console.log(webData)
+      ctx.waitUntil(test(env))
     }
     return new Response('Hello World!')
   },
+  async scheduled(event: any, env: Env['Bindings'], ctx: ExecutionContext) {
+    ctx.waitUntil(test(env))
+  },
+}
+const test = async (env: Env['Bindings']) => {
 }
 */

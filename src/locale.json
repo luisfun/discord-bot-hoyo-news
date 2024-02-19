@@ -105,8 +105,14 @@
   "test": {
     "success": {
       "content": {
-        "en": "Article submitted.",
-        "ja": "記事を送信しました。"
+        "en": "Article submitted. (no filter)",
+        "ja": "記事を送信しました。（フィルターなし）"
+      }
+    },
+    "error": {
+      "content": {
+        "en": "Test failed.",
+        "ja": "テストに失敗しました。"
       }
     }
   },

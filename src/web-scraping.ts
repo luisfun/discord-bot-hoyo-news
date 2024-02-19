@@ -1,12 +1,14 @@
 import puppeteer from '@cloudflare/puppeteer'
 import type { Game } from './utils'
+import { embedColor } from './utils'
 import text from './locale.json'
 
-type Article = {
+export type Article = {
   title: string
   imageUrl: string
   articleUrl: string
   articleId: string
+  color: number
 }
 export type WebData = {
   game: Game
@@ -45,7 +47,8 @@ const fetchGenshinArticles = async (browser: puppeteer.Browser) => {
           const imageUrl: string = await e.$eval(`.news__title img`, img => img.src)
           const title: string = await e.$eval(`.news__info h3`, h3 => h3.innerText)
           const articleId = articleUrl.split(`/`).slice(-1)[0]
-          return { articleUrl, imageUrl, title, articleId }
+          const color = embedColor(title)
+          return { articleUrl, imageUrl, title, articleId, color }
         }),
       )
       data.push({ game, locale, articles: news.filter(e => e.articleUrl.includes(locale)) })
@@ -74,7 +77,8 @@ const fetchStarrailArticles = async (browser: puppeteer.Browser) => {
           const imageUrl = await e.$eval(`.img > img`, img => img.src)
           const title = await e.$eval(`.news-title`, div => div.innerText)
           const articleId = articleUrl.split(`/`).slice(-1)[0]
-          return { articleUrl, imageUrl, title, articleId }
+          const color = embedColor(title)
+          return { articleUrl, imageUrl, title, articleId, color }
         }),
       )
       data.push({ game, locale, articles: news.filter(e => e.articleUrl.includes(locale)) })
@@ -103,7 +107,8 @@ const fetchZenlessArticles = async (browser: puppeteer.Browser) => {
           const imageUrl = await e.$eval(`.news-list__item-banner img`, img => img.src)
           const title = await e.$eval(`.news-list__item-title`, div => div.innerText)
           const articleId = articleUrl.split(`/`).slice(-1)[0]
-          return { articleUrl, imageUrl, title, articleId }
+          const color = embedColor(title)
+          return { articleUrl, imageUrl, title, articleId, color }
         }),
       )
       data.push({ game, locale, articles: news.filter(e => e.articleUrl.includes(locale)) })

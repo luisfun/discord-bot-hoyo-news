@@ -6,7 +6,7 @@ compatibility_flags = [ "nodejs_compat" ]
 browser = { binding = "BROWSER" }
 
 [limits]
-cpu_ms = 3000
+cpu_ms = 10000
 
 [triggers]
 crons = [ "0 * * * *" ]
