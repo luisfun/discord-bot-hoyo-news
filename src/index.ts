@@ -12,7 +12,7 @@ import * as d1 from './d1.js'
 import type { WebData } from './web-scraping.js'
 import { webScraping } from './web-scraping.js'
 import type { Game } from './utils.js'
-import { t, localeMatch, postArticles, embedColor } from './utils.js'
+import { t, localeMatch, postArticles, embedColor, notSupportLocale } from './utils.js'
 import text from './locale.json'
 
 export type Env = {
@@ -88,7 +88,12 @@ const commandHandlers = new CommandHandlers<Env>()
   })
   .on('help', c =>
     c.resEphemeral({
-      embeds: [{ description: t(text.help.embed.description, c.interaction.locale), color: embedColor('blue') }],
+      embeds: [
+        {
+          description: t(text.help.embed.description, c.interaction.locale) + notSupportLocale(c.interaction.locale),
+          color: embedColor('blue'),
+        },
+      ],
       components: new Components().row(new LinkButton('https://discord.gg/5bKYuCcmfu', 'Developer Discord')),
     }),
   )

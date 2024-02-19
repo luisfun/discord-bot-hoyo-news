@@ -8,8 +8,8 @@ export const games = Object.keys(text.game) as Game[]
 
 export const t = (textJson: Record<string, string>, locale: string) => {
   const textLocales = Object.keys(textJson)
-  const textLoc = localeFind(textLocales, locale)
-  if (textLoc) return textJson[textLoc]
+  const textLoc = localeFind(textLocales, locale) || 'en'
+  if (textJson[textLoc]) return textJson[textLoc]
   return 'Failed to load text.'
 }
 
@@ -68,4 +68,11 @@ export const postArticles = async (
           }) as APIEmbed,
       ),
   )
+}
+
+export const notSupportLocale = (locale: string) => {
+  const supportLocales = Object.keys(text.help.embed.description)
+  const match = localeFind(supportLocales, locale)
+  if (match) return ''
+  return '\n\nYour locale is not supported. Please specify your locale when you do `/set`.'
 }
