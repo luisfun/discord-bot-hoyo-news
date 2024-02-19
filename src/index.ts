@@ -19,6 +19,7 @@ export type Env = {
   Bindings: {
     DB: D1Database
     BROWSER: Fetcher
+    DISCORD_APPLICATION_ID: string
   }
 }
 
@@ -87,8 +88,13 @@ const commandHandlers = new CommandHandlers<Env>()
   })
   .on('help', c =>
     c.resEphemeral({
-      content: 'まだ作ってない\n↓の開発者サーバーで質問投げてください',
+      embeds: [{ description: t(text.help.embed.description, c.interaction.locale), color: embedColor('blue') }],
       components: new Components().row(new LinkButton('https://discord.gg/5bKYuCcmfu', 'Developer Discord')),
+    }),
+  )
+  .on('invite', c =>
+    c.resEphemeral({
+      content: `https://discord.com/api/oauth2/authorize?client_id=${c.env.DISCORD_APPLICATION_ID}&permissions=2048&scope=bot`,
     }),
   )
 

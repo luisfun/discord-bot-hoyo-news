@@ -116,6 +116,14 @@
       }
     }
   },
+  "help": {
+    "embed": {
+      "description": {
+        "en": "`/set` Subscribe\nThe locale default to your locale. (If you do not support it, it will not be delivered.)\nFilters must be separated by \",\".\n\n`/info` Check Subscribe Info\nYou can unsubscribe, or test delivery.",
+        "ja": "`/set` 配信の登録\nlocaleのデフォルトはあなたのlocaleです。\nfilterは\",\"で区切ってください。\n\n`/info` 登録情報の確認\n登録解除、配信テストが行えます。"
+      }
+    }
+  },
   "cron": {
     "embed": {
       "description": {

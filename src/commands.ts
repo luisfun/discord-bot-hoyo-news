@@ -5,9 +5,9 @@ export const commands = [
     new Option('game', 'Select a game')
       .required()
       .choices(
-        { name: 'Genshin', value: 'genshin_impact' },
-        { name: 'StarRail', value: 'honkai_star_rail' },
-        { name: 'Zenless', value: 'zenless_zone_zero' },
+        { name: 'Genshin Impact', value: 'genshin_impact' },
+        { name: 'Honkai: Star Rail', value: 'honkai_star_rail' },
+        { name: 'Zenless Zone Zero', value: 'zenless_zone_zero' },
       ),
     new ChannelOption('channel', 'Select a channel to deliver news').channel_types([0]).required(),
     new Option('locale', 'Select a locale').choices({ name: 'English', value: 'en' }, { name: '日本語', value: 'ja' }),
@@ -15,4 +15,5 @@ export const commands = [
   ),
   new Command('info', 'Subscription Information'),
   new Command('help', 'Help'),
+  new Command('invite', '').type(2),
 ]
