@@ -25,7 +25,7 @@ export type Env = {
 
 const commandHandlers = new CommandHandlers<Env>()
   .on('set', async c => {
-    const game = c.valuesMap.game as string | undefined
+    const game = c.valuesMap.game as Game
     const guild_id = c.interaction.guild_id as string | undefined
     const channel = c.valuesMap.channel as string | undefined
     const locale = (c.valuesMap.locale as string | undefined) || c.interaction.locale
@@ -34,11 +34,12 @@ const commandHandlers = new CommandHandlers<Env>()
     const info = success ? await d1.getSubscribe(c.env.DB, game, guild_id) : undefined
     // success
     if (info) {
-      const title = t(text.game[game as Game].title, locale)
+      const title = t(text.game[game].title, locale)
+      const emoji = text.game[game].emoji
       const filter = info.filter_words !== '' ? `\n\`${info.filter_words}\`` : ''
       return c.resEmbeds({
         title: t(text.set.success.embed.title, locale),
-        description: `${title} <#${info.channel_id}>${filter}`,
+        description: `${emoji} ${title} <#${info.channel_id}>${filter}`,
         color: embedColor('green'),
       })
     }
