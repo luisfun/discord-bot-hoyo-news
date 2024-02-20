@@ -4,8 +4,6 @@
 
 ## 🚀 Getting Started
 
-### 0. Environment Installation
-
 [<img alt="Git" src="https://img.shields.io/badge/Git-windows-%23F05032?logo=Git" />](https://gitforwindows.org)
 [<img alt="Node.js" src="https://img.shields.io/badge/Node.js-20.x-%23339933?logo=Node.js" />](https://nodejs.org)
 
@@ -35,14 +33,26 @@ npx wrangler secret put DISCORD_PUBLIC_KEY
 npx wrangler secret put DISCORD_TOKEN
 ```
 
-### 3. Register Commands and Deploy
+### 3. Create Database and Tables
+
+```shell
+npx wrangler d1 create discord-bot-hoyo-news
+```
+
+Update `wrangler.toml` with what is displayed on success.
+
+```shell
+npx wrangler d1 execute discord-bot-hoyo-news --file=./schema.sql
+```
+
+### 4. Register Commands and Deploy
 
 ```shell
 npm run register
 npm run deploy
 ```
 
-### 4. Set Endpoint URL
+### 5. Set Endpoint URL
 
 Enter `https://discord-bot-hoyo-news.YOUER_DOMAIN.workers.dev` in the [INTERACTIONS ENDPOINT URL](https://discord.com/developers/applications).
 
