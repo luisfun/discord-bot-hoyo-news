@@ -7,12 +7,11 @@ import {
   ComponentHandlers,
   CronHandlers,
 } from 'discord-hono'
-import { commands } from './commands.js'
-import * as d1 from './d1.js'
-import type { WebData } from './web-scraping.js'
-import { webScraping } from './web-scraping.js'
-import type { Game } from './utils.js'
-import { t, localeMatch, postArticles, embedColor, notSupportLocale } from './utils.js'
+import * as d1 from './d1'
+import type { WebData } from './web-scraping'
+import { webScraping } from './web-scraping'
+import type { Game } from './utils'
+import { t, localeMatch, postArticles, embedColor, notSupportLocale } from './utils'
 import text from './locale.json'
 
 export type Env = {
@@ -25,11 +24,11 @@ export type Env = {
 
 const commandHandlers = new CommandHandlers<Env>()
   .on('set', async c => {
-    const game = c.valuesMap.game as Game
+    const game = c.values.game as Game
     const guild_id = c.interaction.guild_id as string | undefined
-    const channel = c.valuesMap.channel as string | undefined
-    const locale = (c.valuesMap.locale as string | undefined) || c.interaction.locale
-    const filter_words = c.valuesMap.filter as string | undefined
+    const channel = c.values.channel as string | undefined
+    const locale = (c.values.locale as string | undefined) || c.interaction.locale
+    const filter_words = c.values.filter as string | undefined
     const success = await d1.setSubscribe(c.env.DB, game, guild_id, channel, locale, filter_words)
     const info = success ? await d1.getSubscribe(c.env.DB, game, guild_id) : undefined
     // success
@@ -207,7 +206,6 @@ const cronHandlers = new CronHandlers<Env>().on('', async c => {
 })
 
 const app = new DiscordHono()
-app.commands(commands)
 app.handlers(commandHandlers)
 app.handlers(componentHandlers)
 app.handlers(cronHandlers)
