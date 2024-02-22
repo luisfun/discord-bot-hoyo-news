@@ -1,5 +1,5 @@
 import type { APIEmbed } from 'discord-api-types/v10'
-import type { CommandContext, ComponentContext, ModalContext, CronContext } from 'discord-hono'
+import { postMessage } from 'discord-hono'
 import type { Article } from './web-scraping'
 import text from './locale.json'
 
@@ -48,26 +48,27 @@ export const embedColor = (title: string) => {
 }
 
 export const postArticles = async (
-  c: CommandContext | ComponentContext | ModalContext | CronContext,
+  token: string | undefined,
   locale: string,
   articles: Article[],
   channel_id: string,
   filter_words?: string,
 ) => {
-  return await c.postEmbeds(
-    channel_id,
-    ...articles
-      .filter(e => titleFilter(e.title, filter_words))
-      .map(
-        e =>
-          ({
-            title: e.title,
-            description: `[${t(text.cron.embed.description, locale)}](${e.articleUrl})`,
-            image: { url: e.imageUrl },
-            color: e.color,
-          }) as APIEmbed,
-      ),
-  )
+  return await postMessage(token, channel_id, {
+    embeds: [
+      ...articles
+        .filter(e => titleFilter(e.title, filter_words))
+        .map(
+          e =>
+            ({
+              title: e.title,
+              description: `[${t(text.cron.embed.description, locale)}](${e.articleUrl})`,
+              image: { url: e.imageUrl },
+              color: e.color,
+            }) as APIEmbed,
+        ),
+    ],
+  })
 }
 
 export const notSupportLocale = (locale: string) => {

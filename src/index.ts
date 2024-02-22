@@ -6,6 +6,7 @@ import {
   CommandHandlers,
   ComponentHandlers,
   CronHandlers,
+  ApiRateLimitController,
 } from 'discord-hono'
 import * as d1 from './d1'
 import type { WebData } from './web-scraping'
@@ -19,6 +20,7 @@ export type Env = {
     DB: D1Database
     BROWSER: Fetcher
     DISCORD_APPLICATION_ID: string
+    DISCORD_TOKEN: string
   }
 }
 
@@ -36,14 +38,19 @@ const commandHandlers = new CommandHandlers<Env>()
       const title = t(text.game[game].title, locale)
       const emoji = text.game[game].emoji
       const filter = info.filter_words !== '' ? `\n\`${info.filter_words}\`` : ''
-      return c.resEmbeds({
-        title: t(text.set.success.embed.title, locale),
-        description: `${emoji} ${title} <#${info.channel_id}>${filter}`,
-        color: embedColor('green'),
+      return c.res({
+        embeds: [
+          {
+            title: t(text.set.success.embed.title, locale),
+            description: `${emoji} ${title} <#${info.channel_id}>${filter}`,
+            color: embedColor('green'),
+          },
+        ],
       })
     }
     // set: success, get: error
-    else if (success) return c.resEmbeds({ title: t(text.set.success.embed.title, locale), color: embedColor('green') })
+    else if (success)
+      return c.res({ embeds: [{ title: t(text.set.success.embed.title, locale), color: embedColor('green') }] })
     // error
     else return c.resEphemeral({ content: t(text.set.error.content, locale) })
   })
@@ -61,7 +68,7 @@ const commandHandlers = new CommandHandlers<Env>()
           return `${emoji} ${title} <#${e.channel_id}>${filter}`
         })
         .join('\n\n')
-      return c.res({
+      return c.resEphemeral({
         embeds: [{ title: t(text.info.success.embed.title, locale), description, color: embedColor('blue') }],
         components: new Components()
           .row(
@@ -73,12 +80,7 @@ const commandHandlers = new CommandHandlers<Env>()
                 }),
             ),
           )
-          .row(
-            new Button('message-delete', t(text.info.success.components.messageDelete, locale), 'Secondary').emoji({
-              name: '🗑️',
-            }),
-            new Button('test', t(text.info.success.components.test, locale)),
-          ),
+          .row(new Button('test', t(text.info.success.components.test, locale))),
       })
     }
     // success: not set
@@ -111,17 +113,19 @@ const componentHandlers = new ComponentHandlers<Env>()
     const success = await d1.deleteSubscribe(c.env.DB, game, guild_id)
     // success
     if (success) {
-      c.executionCtx.waitUntil(c.delete())
-      return c.resEmbeds({
-        title: t(text.delete.success.embed.title, locale),
-        description: t(text.game[game as Game].title, locale),
-        color: embedColor('red'),
+      return c.resRepost({
+        embeds: [
+          {
+            title: t(text.delete.success.embed.title, locale),
+            description: t(text.game[game as Game].title, locale),
+            color: embedColor('red'),
+          },
+        ],
       })
     }
     // error
     else return c.resUpdate({ content: t(text.delete.error.content, locale) })
   })
-  .on('message-delete', async c => c.resUpdateDelete())
   .on('test', async c => {
     const guild_id = c.interaction.guild_id
     const locale = c.interaction.locale
@@ -132,7 +136,12 @@ const componentHandlers = new ComponentHandlers<Env>()
       for (const channel of info.guild) {
         for (const article of info.articles) {
           if (channel.title === article.game && localeMatch(channel.locale, article.locale)) {
-            const res = await postArticles(c, article.locale, [article.latest_article_data], channel.channel_id)
+            const res = await postArticles(
+              c.env.DISCORD_TOKEN,
+              article.locale,
+              [article.latest_article_data],
+              channel.channel_id,
+            )
             if (!res) throw new Error('Send error.')
           }
         }
@@ -180,7 +189,7 @@ const cronHandlers = new CronHandlers<Env>().on('', async c => {
   }
   // send message
   if (deff[0]) {
-    let apiRes = undefined
+    const controller = new ApiRateLimitController()
     const notFoundList: { game: string; channel_id: string; status: number }[] = []
     for (const data of deff) {
       const subscribe = await d1.getGameSubscribeAll(c.env.DB, data.game)
@@ -188,11 +197,18 @@ const cronHandlers = new CronHandlers<Env>().on('', async c => {
       for (const guild of subscribe) {
         if (localeMatch(data.locale, guild.locale)) {
           for (let i = 0; i < 3; i++) {
-            apiRes = await postArticles(c, data.locale, data.articles, guild.channel_id, guild.filter_words)
-            if (apiRes?.res.ok) break
-            if (apiRes?.res.status === 404)
-              notFoundList.push({ game: data.game, channel_id: guild.channel_id, status: apiRes.res.status })
-            if (apiRes?.res.status !== 429) break
+            controller.wait()
+            controller.res = await postArticles(
+              c.env.DISCORD_TOKEN,
+              data.locale,
+              data.articles,
+              guild.channel_id,
+              guild.filter_words,
+            )
+            if (controller.res?.ok) break
+            if (controller.res?.status === 404)
+              notFoundList.push({ game: data.game, channel_id: guild.channel_id, status: controller.res.status })
+            if (controller.res?.status !== 429) break
           }
         }
       }
