@@ -1,13 +1,4 @@
-import {
-  DiscordHono,
-  Components,
-  Button,
-  LinkButton,
-  CommandHandlers,
-  ComponentHandlers,
-  CronHandlers,
-  ApiRateLimitController,
-} from 'discord-hono'
+import { DiscordHono, Components, Button, LinkButton, ApiRateLimitController } from 'discord-hono'
 import * as d1 from './d1'
 import type { WebData } from './web-scraping'
 import { webScraping } from './web-scraping'
@@ -24,8 +15,8 @@ export type Env = {
   }
 }
 
-const commandHandlers = new CommandHandlers<Env>()
-  .on('set', async c => {
+const app = new DiscordHono<Env>()
+  .command('set', async c => {
     const game = c.values.game as Game
     const guild_id = c.interaction.guild_id as string | undefined
     const channel = c.values.channel as string | undefined
@@ -54,7 +45,7 @@ const commandHandlers = new CommandHandlers<Env>()
     // error
     else return c.resEphemeral({ content: t(text.set.error.content, locale) })
   })
-  .on('info', async c => {
+  .command('info', async c => {
     const guild_id = c.interaction.guild_id
     const locale = c.interaction.locale
     const info = await d1.getGuildSubscribe(c.env.DB, guild_id)
@@ -88,7 +79,7 @@ const commandHandlers = new CommandHandlers<Env>()
     // error
     else return c.resEphemeral({ content: t(text.info.error.content, locale) })
   })
-  .on('help', c =>
+  .command('help', c =>
     c.resEphemeral({
       embeds: [
         {
@@ -99,14 +90,13 @@ const commandHandlers = new CommandHandlers<Env>()
       components: new Components().row(new LinkButton('https://discord.gg/5bKYuCcmfu', 'Developer Discord')),
     }),
   )
-  .on('invite', c =>
+  .command('invite', c =>
     c.resEphemeral({
       content: `https://discord.com/api/oauth2/authorize?client_id=${c.env.DISCORD_APPLICATION_ID}&permissions=2048&scope=bot`,
     }),
   )
 
-const componentHandlers = new ComponentHandlers<Env>()
-  .on('delete', async c => {
+  .component('delete', async c => {
     const game = c.interaction.data?.custom_id
     const guild_id = c.interaction.guild_id
     const locale = c.interaction.locale
@@ -126,7 +116,7 @@ const componentHandlers = new ComponentHandlers<Env>()
     // error
     else return c.resUpdate({ content: t(text.delete.error.content, locale) })
   })
-  .on('test', async c => {
+  .component('test', async c => {
     const guild_id = c.interaction.guild_id
     const locale = c.interaction.locale
     let updateText: string = ''
@@ -153,78 +143,74 @@ const componentHandlers = new ComponentHandlers<Env>()
     return c.resUpdate({ content: updateText })
   })
 
-const cronHandlers = new CronHandlers<Env>().on('', async c => {
-  const webData = await webScraping(c.env)
-  const dbArticle = await d1.getArticleIds(c.env.DB)
-  if (!dbArticle) throw new Error('Web Scraping Error')
-  const saveBatch: d1.SaveData[] = []
-  const deff = webData
-    .map(data => {
-      const oldIds = dbArticle.find(e => e.game === data.game && e.locale === data.locale)?.article_ids || []
-      const newIds = data.articles.map(e => e.articleId)
-      const diffIds = newIds.filter(e => oldIds.indexOf(e) === -1)
-      if (diffIds[0]) {
-        const saveIds = [...new Set([...newIds, ...oldIds])]
-        if (saveIds.length > 20) saveIds.length = 20
-        const saveLatestData = data.articles[0]
-        saveBatch.push({
-          game: data.game,
-          locale: data.locale,
-          article_ids: saveIds,
-          latest_article_data: saveLatestData,
-        })
-        return {
-          game: data.game,
-          locale: data.locale,
-          articles: data.articles.filter(e => diffIds.some(e2 => e2 === e.articleId)),
+  .cron('', async c => {
+    const webData = await webScraping(c.env)
+    const dbArticle = await d1.getArticleIds(c.env.DB)
+    if (!dbArticle) throw new Error('Web Scraping Error')
+    const saveBatch: d1.SaveData[] = []
+    const deff = webData
+      .map(data => {
+        const oldIds = dbArticle.find(e => e.game === data.game && e.locale === data.locale)?.article_ids || []
+        const newIds = data.articles.map(e => e.articleId)
+        const diffIds = newIds.filter(e => oldIds.indexOf(e) === -1)
+        if (diffIds[0]) {
+          const saveIds = [...new Set([...newIds, ...oldIds])]
+          if (saveIds.length > 20) saveIds.length = 20
+          const saveLatestData = data.articles[0]
+          saveBatch.push({
+            game: data.game,
+            locale: data.locale,
+            article_ids: saveIds,
+            latest_article_data: saveLatestData,
+          })
+          return {
+            game: data.game,
+            locale: data.locale,
+            articles: data.articles.filter(e => diffIds.some(e2 => e2 === e.articleId)),
+          }
         }
-      }
-      return undefined
-    })
-    .filter((e): e is WebData => e !== undefined)
-  // data save
-  if (saveBatch[0]) {
-    const success = d1.setArticleIds(c.env.DB, saveBatch)
-    if (!success) throw new Error('Database REPLACE INTO failed.')
-  }
-  // send message
-  if (deff[0]) {
-    const controller = new ApiRateLimitController()
-    const notFoundList: { game: string; channel_id: string; status: number }[] = []
-    for (const data of deff) {
-      const subscribe = await d1.getGameSubscribeAll(c.env.DB, data.game)
-      if (!subscribe) continue
-      for (const guild of subscribe) {
-        if (localeMatch(data.locale, guild.locale)) {
-          for (let i = 0; i < 3; i++) {
-            controller.wait()
-            controller.res = await postArticles(
-              c.env.DISCORD_TOKEN,
-              data.locale,
-              data.articles,
-              guild.channel_id,
-              guild.filter_words,
-            )
-            if (controller.res?.ok) break
-            if (controller.res?.status === 404)
-              notFoundList.push({ game: data.game, channel_id: guild.channel_id, status: controller.res.status })
-            if (controller.res?.status !== 429) break
+        return undefined
+      })
+      .filter((e): e is WebData => e !== undefined)
+    // data save
+    if (saveBatch[0]) {
+      const success = d1.setArticleIds(c.env.DB, saveBatch)
+      if (!success) throw new Error('Database REPLACE INTO failed.')
+    }
+    // send message
+    if (deff[0]) {
+      const controller = new ApiRateLimitController()
+      const notFoundList: { game: string; channel_id: string; status: number }[] = []
+      for (const data of deff) {
+        const subscribe = await d1.getGameSubscribeAll(c.env.DB, data.game)
+        if (!subscribe) continue
+        for (const guild of subscribe) {
+          if (localeMatch(data.locale, guild.locale)) {
+            for (let i = 0; i < 3; i++) {
+              controller.wait()
+              controller.res = await postArticles(
+                c.env.DISCORD_TOKEN,
+                data.locale,
+                data.articles,
+                guild.channel_id,
+                guild.filter_words,
+              )
+              if (controller.res?.ok) break
+              if (controller.res?.status === 404)
+                notFoundList.push({ game: data.game, channel_id: guild.channel_id, status: controller.res.status })
+              if (controller.res?.status !== 429) break
+            }
           }
         }
       }
-    }
-    if (notFoundList[0]) {
-      for (const notFound of notFoundList) {
-        await d1.updateOrDeleteChannel(c.env.DB, notFound.game, notFound.channel_id, notFound.status)
+      if (notFoundList[0]) {
+        for (const notFound of notFoundList) {
+          await d1.updateOrDeleteChannel(c.env.DB, notFound.game, notFound.channel_id, notFound.status)
+        }
       }
     }
-  }
-})
+  })
 
-const app = new DiscordHono()
-app.handlers(commandHandlers)
-app.handlers(componentHandlers)
-app.handlers(cronHandlers)
 export default app
 
 // test
