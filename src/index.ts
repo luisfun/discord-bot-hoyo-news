@@ -128,6 +128,7 @@ const app = new DiscordHono<Env>()
           if (channel.title === article.game && localeMatch(channel.locale, article.locale)) {
             const res = await postArticles(
               c.env.DISCORD_TOKEN,
+              article.game,
               article.locale,
               [article.latest_article_data],
               channel.channel_id,
@@ -190,6 +191,7 @@ const app = new DiscordHono<Env>()
               controller.wait()
               controller.res = await postArticles(
                 c.env.DISCORD_TOKEN,
+                data.game,
                 data.locale,
                 data.articles,
                 guild.channel_id,

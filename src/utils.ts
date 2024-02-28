@@ -49,6 +49,7 @@ export const embedColor = (title: string) => {
 
 export const postArticles = async (
   token: string | undefined,
+  game: Game,
   locale: string,
   articles: Article[],
   channel_id: string,
@@ -61,6 +62,7 @@ export const postArticles = async (
         .map(
           e =>
             ({
+              author: {name: t(text.game[game].title, locale), icon_url: text.game[game].icon},
               title: e.title,
               description: `[${t(text.cron.embed.description, locale)}](${e.articleUrl})`,
               image: { url: e.imageUrl },

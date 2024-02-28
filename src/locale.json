@@ -9,7 +9,8 @@
       "siteUrl": {
         "en": "https://genshin.hoyoverse.com/en/news",
         "ja": "https://genshin.hoyoverse.com/ja/news"
-      }
+      },
+      "icon": "https://fastcdn.hoyoverse.com/static-resource-v2/2023/11/08/9db76fb146f82c045bc276956f86e047_6878380451593228482.png?x-oss-process=image%2Fresize%2Cs_300%2Fauto-orient%2C0%2Finterlace%2C1%2Fformat%2Cjpg%2Fquality%2Cq_80"
     },
     "honkai_star_rail": {
       "title": {
@@ -20,7 +21,8 @@
       "siteUrl": {
         "en-us": "https://hsr.hoyoverse.com/en-us/news",
         "ja-jp": "https://hsr.hoyoverse.com/ja-jp/news"
-      }
+      },
+      "icon": "https://webstatic-sea.hoyolab.com/communityweb/business/starrail_hoyoverse.png?x-oss-process=image%2Fresize%2Cs_300%2Fauto-orient%2C0%2Finterlace%2C1%2Fformat%2Cjpg%2Fquality%2Cq_80"
     },
     "zenless_zone_zero": {
       "title": {
@@ -31,7 +33,8 @@
       "siteUrl": {
         "en-us": "https://zenless.hoyoverse.com/en-us/news",
         "ja-jp": "https://zenless.hoyoverse.com/ja-jp/news"
-      }
+      },
+      "icon": "https://webstatic-sea.hoyolab.com/communityweb/business/nap.png?x-oss-process=image%2Fresize%2Cs_300%2Fauto-orient%2C0%2Finterlace%2C1%2Fformat%2Cjpg%2Fquality%2Cq_80"
     }
   },
   "set": {
