@@ -37,6 +37,7 @@ export const titleFilter = (title: string, filter_words: string | undefined) => 
 export const embedColor = (title: string) => {
   if (title.includes('Web Event' || title.includes('Webイベント') || title === 'yellow')) return 15918848
   if (
+    title.includes('Special Program Preview') ||
     title.includes('Event Wishes Notice') ||
     title.includes('予告番組') ||
     title.includes('祈願予告') ||
@@ -62,7 +63,7 @@ export const postArticles = async (
         .map(
           e =>
             ({
-              author: {name: t(text.game[game].title, locale), icon_url: text.game[game].icon},
+              author: { name: t(text.game[game].title, locale), icon_url: text.game[game].icon },
               title: e.title,
               description: `[${t(text.cron.embed.description, locale)}](${e.articleUrl})`,
               image: { url: e.imageUrl },
