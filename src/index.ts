@@ -92,7 +92,7 @@ const app = new DiscordHono<Env>()
   )
   .command('invite', c =>
     c.resEphemeral({
-      content: `https://discord.com/api/oauth2/authorize?client_id=${c.env.DISCORD_APPLICATION_ID}&permissions=2048&scope=bot`,
+      content: `https://discord.com/api/oauth2/authorize?client_id=${c.env.DISCORD_APPLICATION_ID}&permissions=0&scope=bot`,
     }),
   )
 
