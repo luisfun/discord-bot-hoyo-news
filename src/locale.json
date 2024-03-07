@@ -10,6 +10,7 @@
         "en": "https://genshin.hoyoverse.com/en/news",
         "ja": "https://genshin.hoyoverse.com/ja/news"
       },
+      "apiUrl": "https://api-os-takumi-static.hoyoverse.com/content_v2_user/app/a1b1f9d3315447cc/getContentList",
       "icon": "https://fastcdn.hoyoverse.com/static-resource-v2/2023/11/08/9db76fb146f82c045bc276956f86e047_6878380451593228482.png?x-oss-process=image%2Fresize%2Cs_300%2Fauto-orient%2C0%2Finterlace%2C1%2Fformat%2Cjpg%2Fquality%2Cq_80"
     },
     "honkai_star_rail": {
@@ -34,6 +35,7 @@
         "en-us": "https://zenless.hoyoverse.com/en-us/news",
         "ja-jp": "https://zenless.hoyoverse.com/ja-jp/news"
       },
+      "apiUrl": "https://api-os-takumi-static.hoyoverse.com/content_v2_user/app/3e9196a4b9274bd7/getContentList",
       "icon": "https://webstatic-sea.hoyolab.com/communityweb/business/nap.png?x-oss-process=image%2Fresize%2Cs_300%2Fauto-orient%2C0%2Finterlace%2C1%2Fformat%2Cjpg%2Fquality%2Cq_80"
     }
   },

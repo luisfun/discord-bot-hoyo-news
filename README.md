@@ -59,3 +59,7 @@ Enter `https://discord-bot-hoyo-news.YOUER_DOMAIN.workers.dev` in the [INTERACTI
 ## 📑 Official Docs
 
 [Discord Bot](https://discord.com/developers/docs/tutorials/hosting-on-cloudflare-workers)
+
+## Special Thanks
+
+@timelis
