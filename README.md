@@ -62,4 +62,4 @@ Enter `https://discord-bot-hoyo-news.YOUER_DOMAIN.workers.dev` in the [INTERACTI
 
 ## Special Thanks
 
-@timelis
+[timelis](https://github.com/timelis)
