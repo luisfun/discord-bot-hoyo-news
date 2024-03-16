@@ -41,6 +41,7 @@ export const embedColor = (title: string) => {
     title.includes('Event Wishes Notice') ||
     title.includes('予告番組') ||
     title.includes('祈願予告') ||
+    title.includes('イベント祈願') ||
     title === 'green'
   )
     return 45163
