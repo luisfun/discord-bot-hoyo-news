@@ -35,7 +35,7 @@ export const titleFilter = (title: string, filter_words: string | undefined) => 
 }
 
 export const embedColor = (title: string) => {
-  if (title.includes('Web Event' || title.includes('Webイベント') || title === 'yellow')) return 15918848
+  if (title.includes('Web Event') || title.includes('Webイベント') || title === 'yellow') return 15918848
   if (
     title.includes('Special Program Preview') ||
     title.includes('Event Wishes Notice') ||

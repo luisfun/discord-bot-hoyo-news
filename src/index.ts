@@ -188,7 +188,7 @@ const app = new DiscordHono<Env>()
         for (const guild of subscribe) {
           if (localeMatch(data.locale, guild.locale)) {
             for (let i = 0; i < 3; i++) {
-              controller.wait()
+              await controller.wait()
               controller.res = await postArticles(
                 c.env.DISCORD_TOKEN,
                 data.game,
