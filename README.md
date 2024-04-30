@@ -10,7 +10,7 @@
 ### 1. Clone and Install
 
 ```shell
-git clone https://github.com/LuisFun/discord-bot-hoyo-news discord-bot-hoyo-news
+git clone https://github.com/luisfun/discord-bot-hoyo-news discord-bot-hoyo-news
 cd discord-bot-hoyo-news
 npm i
 ```
